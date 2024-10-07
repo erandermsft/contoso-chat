@@ -80,9 +80,9 @@ def evaluate_wrapper():
         # target=get_response,
         evaluators={
             "relevance": relevance_evaluation,
-            # "fluency": fluency_evaluator,
-            # "coherence": coherence_evaluator,
-            # "groundedness": groundedness_evaluator,
+             "fluency": fluency_evaluation,
+             "coherence": coherence_evaluation,
+             "groundedness": groundedness_evaluation,
         },
         evaluator_config={
             "default": {
