@@ -1,4 +1,4 @@
-name: Evaluate
+name: Evaluate in AI Studio
 
 on:
   workflow_dispatch:
@@ -44,7 +44,7 @@ jobs:
       SERVICE_ACA_IMAGE_NAME: ${{ vars.SERVICE_ACA_IMAGE_NAME }}
       SERVICE_ACA_NAME: ${{ vars.SERVICE_ACA_NAME }}
       SERVICE_ACA_URI: ${{ vars.SERVICE_ACA_URI }}
-
+      AZURE_PROJECT_NAME: ${{ vars.AZURE_PROJECT_NAME }}
     steps:
       - name: checkout repo content
         uses: actions/checkout@v4 # checkout the repository content
@@ -78,7 +78,7 @@ jobs:
       - name: evaluate
         working-directory: ./src/api
         run: |
-          python -m evaluate
+          python evalute_studio.py
       
       - name: Upload eval results as build artifact
         uses: actions/upload-artifact@v4
@@ -93,5 +93,5 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
 
           echo "📊 Evaluation Results" >> $GITHUB_STEP_SUMMARY
-          cat evaluate/eval_results.md >> $GITHUB_STEP_SUMMARY
+          cat eval_results.md >> $GITHUB_STEP_SUMMARY
         
