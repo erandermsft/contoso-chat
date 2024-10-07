@@ -18,9 +18,9 @@ Tracer.add("PromptyTracer", json_tracer.tracer)
 
 @trace
 def relevance_evaluation(    
-      question: any,
-      context: any,
-      answer: any
+      question: str,
+      context: dict,
+      answer: str
 ) -> str:
 
   # execute the prompty file
