@@ -79,7 +79,7 @@ jobs:
         working-directory: ./src/api
         run: |
           ls -1 | xargs realpath
-          python evalute.py
+          python evaluate.py
       
       - name: Upload eval results as build artifact
         uses: actions/upload-artifact@v4
