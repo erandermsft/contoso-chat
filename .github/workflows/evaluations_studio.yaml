@@ -78,7 +78,8 @@ jobs:
       - name: evaluate
         working-directory: ./src/api
         run: |
-          python -m evalute_studio.py
+          ls
+          python evalute_studio.py
       
       - name: Upload eval results as build artifact
         uses: actions/upload-artifact@v4
