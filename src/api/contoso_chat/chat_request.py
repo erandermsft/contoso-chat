@@ -1,27 +1,30 @@
 from dotenv import load_dotenv
 load_dotenv()
 
-from azure.cosmos import CosmosClient
-from sys import argv
-import os
-import pathlib
-from contoso_chat.product import product
 from azure.identity import DefaultAzureCredential
-import prompty
+
+from azure.cosmos import CosmosClient
+import os
+from contoso_chat.product import product
 import prompty.azure
-from prompty.tracer import trace, Tracer, console_tracer, PromptyTracer
+from prompty.tracer import trace
 
+from langchain_openai import AzureChatOpenAI
+from pathlib import Path
+from langchain_prompty import create_chat_prompt
+from langchain_core.output_parsers import StrOutputParser
 
-# add console and json tracer:
-# this only has to be done once
-# at application startup
-Tracer.add("console", console_tracer)
-json_tracer = PromptyTracer()
-Tracer.add("PromptyTracer", json_tracer.tracer)
+def azure_ad_token_provider():
+    # Initialize Azure Credential
+    credential = DefaultAzureCredential()
+    
+    # Obtain the token with the correct scope
+    token = credential.get_token("https://cognitiveservices.azure.com/.default").token
+    
+    return token
 
-
-@trace
 def get_customer(customerId: str) -> str:
+    
     try:
         url = os.environ["COSMOS_ENDPOINT"]
         client = CosmosClient(url=url, credential=DefaultAzureCredential())
@@ -34,31 +37,80 @@ def get_customer(customerId: str) -> str:
         print(f"Error retrieving customer: {e}")
         return None
 
+"""
+@trace
+def get_customer(input_dict: str) -> str:
+    
+    # Get customer id
+    customerId = input_dict.get("customerId", "")
+
+    try:
+        url = os.environ["COSMOS_ENDPOINT"]
+        client = CosmosClient(url=url, credential=DefaultAzureCredential())
+        db = client.get_database_client("contoso-outdoor")
+        container = db.get_container_client("customers")
+        response = container.read_item(item=str(customerId), partition_key=str(customerId))
+        response["orders"] = response["orders"][:2]
+        return response
+    except Exception as e:
+        print(f"Error retrieving customer: {e}")
+        return None
+
+def get_question(input_dict: str) -> str:
+    return input_dict.get("question", "")
+
+def get_chat_history(input_dict: str) -> str:
+    return input_dict.get("chat_history", [])
+
+
+# Defining Langchain components
+def get_respone_chain():
+    # Load prompty as langchain ChatPromptTemplate
+    folder = Path(__file__).parent.absolute().as_posix()
+    path_to_prompty = folder + "/chat.prompty"
+    prompt = create_chat_prompt(path_to_prompty)
+
+    # Initialize the Azure OpenAI model
+    model = AzureChatOpenAI(
+        deployment_name="gpt-4",
+        api_version="2023-06-01-preview",
+        api_key=azure_ad_token_provider(),
+        openai_api_type="azure_ad"
+    )
+
+    output_parser = StrOutputParser()
+
+    get_response = {"customer": get_customer, "documentation": product.find_products, "question":get_question, "chat_history": get_chat_history} | prompt | model | output_parser
+
+    return get_response
+"""
 
 @trace
 def get_response(customerId, question, chat_history):
-    print("getting customer...")
     customer = get_customer(customerId)
-    print("customer complete")
     context = product.find_products(question)
-    print("products complete")
-    print("getting result...")
 
-    model_config = {
-        "azure_endpoint": os.environ["AZURE_OPENAI_ENDPOINT"],
-        "api_version": os.environ["AZURE_OPENAI_API_VERSION"],
-    }
+    # Load prompty as langchain ChatPromptTemplate
+    folder = Path(__file__).parent.absolute().as_posix()
+    path_to_prompty = folder + "/chat.prompty"
+    prompt = create_chat_prompt(path_to_prompty)
 
-    result = prompty.execute(
-        "chat.prompty",
-        inputs={"question": question, "customer": customer, "documentation": context},
-        configuration=model_config,
+    # Initialize the Azure OpenAI model
+    model = AzureChatOpenAI(
+        deployment_name="gpt-4",
+        api_version="2023-06-01-preview",
+        api_key=azure_ad_token_provider(),
+        openai_api_type="azure_ad"
     )
+
+    output_parser = StrOutputParser()
+
+    chain = prompt | model | output_parser
+    
+    result = chain.invoke({
+        "customer": customer,
+        "question": question,
+        "chat_history": chat_history
+    })
+
     return {"question": question, "answer": result, "context": context}
-
-if __name__ == "__main__":
-    from tracing import init_tracing
-
-    tracer = init_tracing(local_tracing=False)
-    get_response(4, "What hiking jackets would you recommend?", [])
-    #get_response(argv[1], argv[2], argv[3])
