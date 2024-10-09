@@ -20,9 +20,9 @@ load_dotenv()
 
 @trace
 def groundedness_evaluation(    
-      question: any,
-      context: any,
-      answer: any
+      question: str,
+      context: dict,
+      answer: str
 ) -> str:
 
   # execute the prompty file

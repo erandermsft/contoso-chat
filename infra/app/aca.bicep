@@ -18,6 +18,8 @@ param cosmosContainerName string
 param aiSearchEndpoint string
 param aiSearchIndexName string
 param appinsights_Connectionstring string
+param promptflow_endpoint string = ''
+param promptflow_key string = ''
 
 
 module app '../core/host/container-app-upsert.bicep' = {
@@ -78,6 +80,14 @@ module app '../core/host/container-app-upsert.bicep' = {
       {
         name: 'APPINSIGHTS_CONNECTIONSTRING'
         value: appinsights_Connectionstring
+      }
+      {
+        name: 'PROMPTFLOW_ENDPOINT'
+        value: promptflow_endpoint
+      }
+      {
+        name:'PROMPTFLOW_KEY'
+        value: promptflow_key
       }
 
     ]

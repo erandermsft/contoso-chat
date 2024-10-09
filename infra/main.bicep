@@ -215,6 +215,34 @@ module aca 'app/aca.bicep' = {
     cosmosDatabaseName: cosmosDatabaseName
     cosmosContainerName: cosmosContainerName
     appinsights_Connectionstring: ai.outputs.applicationInsightsConnectionString
+    
+  }
+}
+module acaweb 'app/aca.bicep' = {
+  name: 'acaweb'
+  scope: resourceGroup
+  params: {
+    name: replace('${take(prefix, 19)}-web', '--', '-')
+    location: location
+    tags: tags
+    serviceName: 'acaweb' 
+    identityName: managedIdentity.outputs.managedIdentityName
+    identityId: managedIdentity.outputs.managedIdentityClientId
+    containerAppsEnvironmentName: containerApps.outputs.environmentName
+    containerRegistryName: containerApps.outputs.registryName
+    openAiDeploymentName: !empty(openAiDeploymentName) ? openAiDeploymentName : 'gpt-35-turbo'
+    openAiEmbeddingDeploymentName: openAiEmbeddingDeploymentName
+    openAiEndpoint: ai.outputs.openAiEndpoint
+    openAiType: openAiType
+    openAiApiVersion: openAiApiVersion
+    aiSearchEndpoint: ai.outputs.searchServiceEndpoint
+    aiSearchIndexName: aiSearchIndexName
+    cosmosEndpoint: cosmos.outputs.endpoint
+    cosmosDatabaseName: cosmosDatabaseName
+    cosmosContainerName: cosmosContainerName
+    appinsights_Connectionstring: ai.outputs.applicationInsightsConnectionString
+    promptflow_endpoint: '${aca.outputs.SERVICE_ACA_URI}/api/create_response'
+    promptflow_key:'1234'
   }
 }
 
@@ -311,6 +339,10 @@ output AZURE_OPENAI_RESOURCE_GROUP_LOCATION string = openAiResourceGroup.locatio
 output SERVICE_ACA_NAME string = aca.outputs.SERVICE_ACA_NAME
 output SERVICE_ACA_URI string = aca.outputs.SERVICE_ACA_URI
 output SERVICE_ACA_IMAGE_NAME string = aca.outputs.SERVICE_ACA_IMAGE_NAME
+
+output SERVICE_ACAWEB_NAME string = acaweb.outputs.SERVICE_ACA_NAME
+output SERVICE_ACAWEB_URI string = acaweb.outputs.SERVICE_ACA_URI
+output SERVICE_ACAWEB_IMAGE_NAME string = acaweb.outputs.SERVICE_ACA_IMAGE_NAME
 
 output AZURE_CONTAINER_ENVIRONMENT_NAME string = containerApps.outputs.environmentName
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = containerApps.outputs.registryLoginServer

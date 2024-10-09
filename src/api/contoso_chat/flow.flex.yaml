@@ -1,0 +1,9 @@
+entry: chat_request:get_response
+# environment:
+  # image: crbbeummsa56zpe.azurecr.io/python311:latest
+  # python_requirements_txt: 'requirements.txt'
+inputs:
+  question:
+    type: string
+  customerId:
+    type: string
